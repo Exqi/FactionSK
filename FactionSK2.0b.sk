@@ -648,7 +648,6 @@ command f [<text>] [<text>] [<text>] [<text>]:
 					set {_list::*} to yaml nodes "Faction" from file "./Factions/Factions.yml"
 					if "%{_list::*}%" contains "%arg-2%":
 						FactionShow(arg-2,player)
-						broadcast "cacsa"
 						stop
 					#if there is no faction with that name, I will check if there a player
 					else:
