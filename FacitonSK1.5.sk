@@ -183,8 +183,7 @@ function FactionShow(F: text, p: player):
 		set {_freeze} to "no"
 		set {_icono} to "&2▲"
 
-	loop {x_factions_FAC::factions::%{_F}%::lands::*}:
-		set {_lands} to {_lands}+1
+	set {_lands} to size of {x_factions_FAC::factions::%{_F}%::lands::*}
 	set {_maxlands} to {_players}*{@land-per-player}
 	if {_maxlands} is greater than {@faction-land-max}:
 		set {_maxlands} to {@faction-land-max}
@@ -409,15 +408,11 @@ command f [<text>] [<text>] [<text>] [<text>]:
 				if {x_factions_FAC::players::%uuid of player%.faction} isn't "wilder":
 					set {_F} to {x_factions_FAC::players::%uuid of player%.faction}
 					if {x_factions_FAC::factions::%{_F}%::mods::%uuid of player%} is set:
-						set {_players} to 0
-						loop {x_factions_FAC::factions::%{_F}%::players::*}:
-							set {_players} to {_players}+1
+						set {_players} to size of {x_factions_FAC::factions::%{_F}%::players::*}
 						set {_maxlands} to {_players}*{@land-per-player}
 						if {_maxlands} is greater than {@faction-land-max}:
 							set {_maxlands} to {@faction-land-max}
-						set {_lands} to 0
-						loop {x_factions_FAC::factions::%{_F}%::lands::*}:
-							set {_lands} to {_lands}+1
+						set {_lands} to sieze of {x_factions_FAC::factions::%{_F}%::lands::*}
 						if {_lands} is {_maxlands}:
 							send  "%{@Prefix}% &7You can't claim more lands, you may need more players or you reached the max amount of lands per factions"
 							stop
@@ -690,9 +685,7 @@ command f [<text>] [<text>] [<text>] [<text>]:
 #/f list [shows the factions list]
 		if arg-1 is "list":
 			if {x_factions_FAC::factions::*} is set:
-				set {_cont} to 0
-				loop {x_factions_FAC::factions::*}:
-					set {_cont} to {_cont}+1
+				set {_cont} to {x_factions_FAC::factions::*}
 				if {_cont} is more than 8:
 					set {_maxpag} to {_cont}/8
 					set {_maxpag} to ceil({_maxpag})
