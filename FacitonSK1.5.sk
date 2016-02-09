@@ -259,7 +259,9 @@ command f [<text>] [<text>] [<text>] [<text>]:
 							set {x_factions_FAC::players::%uuid of player%.faction} to arg-2 #faction del jugador
 							set {x_factions_FAC::factions::%arg-2%::dtr.freeze} to true
 							set {x_factions_FAC::factions::%arg-2%::lastactivicty} to now
+							set {x_factions_FAC::factions::%arg-2%::officer::%uuid of player%} to uuid of player #due??e la faction
 							add {@delete-faction-after} days to {x_factions_FAC::factions::%arg-2%::lastactivicty}
+
 							send "%{@Prefix}% &7Faction made: %arg-2%"
 							broadcast "%{@Prefix}% &c%player%&7 made the faction &c%arg-2%"
 							FactionTag("call")
@@ -810,6 +812,40 @@ command f [<text>] [<text>] [<text>] [<text>]:
 				send "%{@Prefix}% &7You must own a faction to use this command"
 				stop
 
+		if arg-1 is "officer":
+			if {x_factions_FAC::players::%uuid of player%.faction} isn't "wilder":
+				set {_F} to {x_factions_FAC::players::%uuid of player%.faction} #que faction es
+				if {x_factions_FAC::factions::%{_F}%::owner} is uuid of player:
+					if arg-2 is set:
+						set {_l} to length of the arg-2
+						if {_l} is less than 3:
+							send "%{@Prefix}% &7The name must contain at least 3 characters"
+							stop
+						set {_p} to uuid of arg-2 parsed as a player
+						if {x_factions_FAC::factions::%{_F}%::players::%{_p}%} is set:
+							if {x_factions_FAC::factions::%{_F}%::officer::%{_p}%} is set:
+								delete {x_factions_FAC::factions::%{_F}%::officer::%{_p}%}
+								send "%{@Prefix}% &2%arg-2% &7is no longer a OFFICER"
+								send "%{@Prefix}% &7You are no longer a OFFICER of &2%{_F}%" to player from uuid {_p}
+								stop
+							else:
+								set {x_factions_FAC::factions::%{_F}%::officer::%{_p}%} to {_p}
+								send "%{@Prefix}% &7You are now a OFFICER of &2%{_F}%" to player from uuid {_p}
+								send "%{@Prefix}% &2%arg-2% &7is now a OFFICER"
+								stop
+						else:
+							send "%{@Prefix}% &c%arg-2% &7is not a member of the faction"
+							stop
+					else:
+						send "%{@Prefix}% &7You need to specify a player"
+						stop
+				else:
+					send "%{@Prefix}% &7You must be the owner of &2%{_F}% &7to use this command"
+					stop
+			else:
+				send "%{@Prefix}% &7You must own a faction to use this command"
+				stop
+
 # /F  kick {FACTION.MEMBER}  [KICK A FACTION MEMBER]
 		if arg-1 is "kick":
 			if {x_factions_FAC::players::%uuid of player%.faction} isn't  "wilder":
@@ -837,6 +873,8 @@ command f [<text>] [<text>] [<text>] [<text>]:
 								delete {x_factions_FAC::factions::%{_F}%::players::%{_p}%}
 								if {x_factions_FAC::factions::%{_F}%::players::mods::%player%} is set:
 									delete {x_factions_FAC::factions::%{_F}%::players::mods::%{_p}%}
+								if {x_factions_FAC::factions::%{_F}%::officer::%{_p}%} is set:
+									delete {x_factions_FAC::factions::%{_F}%::officer::%{_p}%}
 								set {x_factions_FAC::players::%{_p}%.faction} to "wilder"
 								set {x_factions_FAC::players.%{_p}%.chat} to 1
 								set {x_factions_FAC::factions::%{_F}%::dtr} to {x_factions_FAC::factions::%{_F}%::dtr}-1
@@ -874,8 +912,13 @@ command f [<text>] [<text>] [<text>] [<text>]:
 								set {_P} to uuid of arg-2 parsed as player
 								if {x_factions_FAC::players::%{_P}%.faction} is {_F}:
 									set {x_factions_FAC::factions::%{_F}%::owner} to {_P}
+
 									delete {x_factions_FAC::factions::%{_F}%::mods::%uuid of player%}
 									set {x_factions_FAC::factions::%{_F}%::mods::%{_P}%} to {_P}
+
+									delete {x_factions_FAC::factions::%{_F}%::officer::%uuid of player%}
+									set {x_factions_FAC::factions::%{_F}%::officer::%{_P}%} to {_P}
+
 									loop {x_factions_FAC::factions::%{_F}%::players::*}:
 										send "%{@Prefix}% &7The owner of &2%{_F}% &7is now &2%player from uuid {_P}% " to player from uuid loop-value
 									#remove player from the owner
@@ -1443,7 +1486,7 @@ command f [<text>] [<text>] [<text>] [<text>]:
 			send "&6-----------&9/f 2 &7para mas comandos&6-----------"
 			stop
 
-		if arg-1 isn't "create" or "perms" or "truce" or "invite" or "deinvite" or "join" or "unclaim" or "claim" or "tag" or "sethome" or "show" or "who" or "home" or "leave" or "list" or "disband" or "mod" or "kick" or "owner" or "ally" or "neutral" or "c" or "chat " or "map" or "2" or "3":
+		if arg-1 isn't "officer" or "create" or "perms" or "truce" or "invite" or "deinvite" or "join" or "unclaim" or "claim" or "tag" or "sethome" or "show" or "who" or "home" or "leave" or "list" or "disband" or "mod" or "kick" or "owner" or "ally" or "neutral" or "c" or "chat " or "map" or "2" or "3":
 			send "&6--------------------------------------------"
 			send "&9                     Forbidden HCF"
 			send "&6--------------------------------------------"
@@ -1478,7 +1521,7 @@ command f [<text>] [<text>] [<text>] [<text>]:
 			send "&9/f mod       &2&l>>  &7Da a un miembro rango de MOD"
 			send "&9/f chat      &2&l>> &7Cambias de chat"
 			send "&9/f owner    &2&l>> &7Cambias de chat"
-			send ""
+			send "&9/f officer    &2&l>>  &7Permite que un usuario acceda a tus cofres protegidos"
 			stop
 
 command f-admin [<text>] [<text>] [<text>]:
