@@ -118,7 +118,6 @@ function FactionDisband(F: text):
 	loop {x_factions_FAC::factions::%{_F}%::lands::*}:
 		delete {x_factions_FAC::chunks::%loop-value%.owner}
 		delete {x_factions_FAC::chunks::%loop-value%}
-
 	delete {x_factions_FAC::factions::%{_F}%.owner}
 	delete {x_factions_FAC::factions::%{_F}%::*}
 	delete {x_factions_FAC::factions::%{_F}%}
@@ -175,7 +174,7 @@ function FactionShow(F: text, p: player):
 
 	set {_dtr} to {x_factions_FAC::factions::%{_F}%::dtr}
 
-	if {x_factions_FAC::factions::%{_F}%::dtr.freeze} is greater than now:
+	if {x_factions_FAC::factions::%{_F}%::dtr.freeze} > now:
 		set {_freeze} to "Yes"
 		set {_until} to difference between {x_factions_FAC::factions::%{_F}%::dtr.freeze} and now
 		set {_icono} to ""
@@ -256,7 +255,8 @@ command f [<text>] [<text>] [<text>] [<text>]:
 							set {x_factions_FAC::factions::%arg-2%::players::%uuid of player%} to uuid of player
 							set {x_factions_FAC::factions::%arg-2%::dtr.raideable} to false
 							set {x_factions_FAC::players::%uuid of player%.faction} to arg-2 #faction del jugador
-							set {x_factions_FAC::factions::%arg-2%::dtr.freeze} to true
+							set {x_factions_FAC::factions::%arg-2%::dtr.freeze} to now
+							subtract 1 second from {x_factions_FAC::factions::%arg-2%::dtr.freeze}
 							set {x_factions_FAC::factions::%arg-2%::lastactivicty} to now
 							set {x_factions_FAC::factions::%arg-2%::officer::%uuid of player%} to uuid of player #due??e la faction
 							add {@delete-faction-after} days to {x_factions_FAC::factions::%arg-2%::lastactivicty}
@@ -412,7 +412,7 @@ command f [<text>] [<text>] [<text>] [<text>]:
 						set {_maxlands} to {_players}*{@land-per-player}
 						if {_maxlands} is greater than {@faction-land-max}:
 							set {_maxlands} to {@faction-land-max}
-						set {_lands} to sieze of {x_factions_FAC::factions::%{_F}%::lands::*}
+						set {_lands} to size of {x_factions_FAC::factions::%{_F}%::lands::*}
 						if {_lands} is {_maxlands}:
 							send  "%{@Prefix}% &7You can't claim more lands, you may need more players or you reached the max amount of lands per factions"
 							stop
@@ -685,7 +685,7 @@ command f [<text>] [<text>] [<text>] [<text>]:
 #/f list [shows the factions list]
 		if arg-1 is "list":
 			if {x_factions_FAC::factions::*} is set:
-				set {_cont} to {x_factions_FAC::factions::*}
+				set {_cont} to size of {x_factions_FAC::factions::*}
 				if {_cont} is more than 8:
 					set {_maxpag} to {_cont}/8
 					set {_maxpag} to ceil({_maxpag})
@@ -752,7 +752,7 @@ command f [<text>] [<text>] [<text>] [<text>]:
 			if {x_factions_FAC::players::%uuid of player%.faction} isn't "wilder":
 				set {_F} to {x_factions_FAC::players::%uuid of player%.faction} #que faction es
 				if {x_factions_FAC::factions::%{_F}%::owner} is uuid of player:
-					if {x_factions_FAC::factions::%{_F}%::dtr.freeze} isn't greater than now:
+					if {x_factions_FAC::factions::%{_F}%::dtr.freeze} < now:
 						FactionDisband("%{_F}%")
 						FactionTag("call")
 						broadcast "%{@Prefix}% &7The Faction %{_F}% was disbaned"
@@ -1607,7 +1607,8 @@ command f-admin [<text>] [<text>] [<text>]:
 			if arg-2 is set:
 				if {x_factions_FAC::factions::%arg-2%} is set:
 					set {_F} to arg-2
-					set {x_factions_FAC::factions::%{_F}%::dtr.freeze} to false
+					set {x_factions_FAC::factions::%{_F}%::dtr.freeze} to now
+					subtract 1 second from {x_factions_FAC::factions::%{_F}%::dtr.freeze}
 					send "%{@Prefix}% &8Dtr freeze removed from faction %{_F}%"
 					stop
 				else:
@@ -1832,26 +1833,23 @@ every 1 minute:
 	loop {x_factions_FAC::factions::*}:
 		set {_F} to loop-value
 		set {_p} to 0
-		if {x_factions_FAC::factions::%{_F}%::dtr.freeze} is set:
-			if {x_factions_FAC::factions::%{_F}%::dtr.freeze} isn't greater than now:
-				set {_jugadores} to 0
-				set {_jugadores} to size of {x_factions_FAC::factions::%{_F}%::players::*}
-				if {_jugadores} is more than 1:
-					set {_maxfactiondtr} to ({_jugadores} - 1) * {@player-dtr} + {@solo-faction}
-					if {x_factions_FAC::factions::%{_F}%::dtr} is less than {_maxfactiondtr}:
-						set {_adddtr} to {_jugadores}*{@minute-dtr}
-						set {x_factions_FAC::factions::%{_F}%::dtr} to {x_factions_FAC::factions::%{_F}%::dtr}+{_adddtr}
-					else:
-						set {x_factions_FAC::factions::%{_F}%::dtr} to {_maxfactiondtr}
+		if {x_factions_FAC::factions::%{_F}%::dtr.freeze} < now:
+			set {_jugadores} to 0
+			set {_jugadores} to size of {x_factions_FAC::factions::%{_F}%::players::*}
+			if {_jugadores} is more than 1:
+				set {_maxfactiondtr} to ({_jugadores} - 1) * {@player-dtr} + {@solo-faction}
+				if {x_factions_FAC::factions::%{_F}%::dtr} is less than {_maxfactiondtr}:
+					set {_adddtr} to {_jugadores}*{@minute-dtr}
+					set {x_factions_FAC::factions::%{_F}%::dtr} to {x_factions_FAC::factions::%{_F}%::dtr}+{_adddtr}
 				else:
-					set {_maxfactiondtr} to {@solo-faction}
-					if {x_factions_FAC::factions::%{_F}%::dtr} is less than {_maxfactiondtr}:
-						set {_adddtr} to {_jugadores}*{@minute-dtr}
-						set {x_factions_FAC::factions::%{_F}%::dtr} to {x_factions_FAC::factions::%{_F}%::dtr}+{_adddtr}
-					else:
-						set {x_factions_FAC::factions::%{_F}%::dtr} to {@solo-faction}
-		else:
-			set {x_factions_FAC::factions::%{_F}%::dtr.freeze} to true
+					set {x_factions_FAC::factions::%{_F}%::dtr} to {_maxfactiondtr}
+			else:
+				set {_maxfactiondtr} to {@solo-faction}
+				if {x_factions_FAC::factions::%{_F}%::dtr} is less than {_maxfactiondtr}:
+					set {_adddtr} to {_jugadores}*{@minute-dtr}
+					set {x_factions_FAC::factions::%{_F}%::dtr} to {x_factions_FAC::factions::%{_F}%::dtr}+{_adddtr}
+				else:
+					set {x_factions_FAC::factions::%{_F}%::dtr} to {@solo-faction}
 		FactionDtr("%{_F}%")		
 
 every 1 hours:
