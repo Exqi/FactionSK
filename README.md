@@ -9,6 +9,6 @@ Here is my e-mail, in case that you have any kind of suggestion:
 
 marianoz@vera.com.uy
 
-And here is the link to skunity: http://forums.skunity.com/t/factionsk-0-6b-umbaska-skquery-wildskript/2247/20
+And here is the link to skunity: https://forums.skunity.com/topic/1513/factionsk-1-5-1
 
 
